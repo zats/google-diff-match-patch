@@ -54,9 +54,9 @@ typedef NS_ENUM(NSInteger, DMPOperation) {
 @property (nonatomic, assign) DMPOperation operation;
 @property (nonatomic, copy) NSString *text;
 
-+ (id)diffWithOperation:(DMPOperation)anOperation andText:(NSString *)aText;
++ (instancetype)diffWithOperation:(DMPOperation)anOperation andText:(NSString *)aText;
 
-- (id)initWithOperation:(DMPOperation)anOperation andText:(NSString *)aText;
+- (instancetype)initWithOperation:(DMPOperation)anOperation andText:(NSString *)aText;
 
 @end
 
