@@ -30,33 +30,33 @@
 
 /*
  * The data structure representing a diff is an NSMutableArray of DMPDiff objects:
- * {DMPDiff(Operation.DIFF_DELETE, "Hello"),
- *  DMPDiff(Operation.DIFF_INSERT, "Goodbye"),
- *  DMPDiff(Operation.DIFF_EQUAL, " world.")}
+ * {DMPDiff(DMPOperation.DIFF_DELETE, "Hello"),
+ *  DMPDiff(DMPOperation.DIFF_INSERT, "Goodbye"),
+ *  DMPDiff(DMPOperation.DIFF_EQUAL, " world.")}
  * which means: delete "Hello", add "Goodbye" and keep " world."
  */
 
-typedef enum {
+typedef NS_ENUM(NSInteger, DMPOperation) {
   DIFF_DELETE = 1,
   DIFF_INSERT = 2,
   DIFF_EQUAL = 3
-} Operation;
+};
 
 
 /*
  * Class representing one diff operation.
  */
 @interface DMPDiff : NSObject <NSCopying> {
-  Operation operation;  // One of: DIFF_INSERT, DIFF_DELETE or DIFF_EQUAL.
+  DMPOperation operation;  // One of: DIFF_INSERT, DIFF_DELETE or DIFF_EQUAL.
   NSString *text;      // The text associated with this diff operation.
 }
 
-@property (nonatomic, assign) Operation operation;
+@property (nonatomic, assign) DMPOperation operation;
 @property (nonatomic, copy) NSString *text;
 
-+ (id)diffWithOperation:(Operation)anOperation andText:(NSString *)aText;
++ (id)diffWithOperation:(DMPOperation)anOperation andText:(NSString *)aText;
 
-- (id)initWithOperation:(Operation)anOperation andText:(NSString *)aText;
+- (id)initWithOperation:(DMPOperation)anOperation andText:(NSString *)aText;
 
 @end
 

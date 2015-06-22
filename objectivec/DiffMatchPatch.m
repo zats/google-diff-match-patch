@@ -59,13 +59,13 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
  * @param operation One of DIFF_INSERT, DIFF_DELETE or DIFF_EQUAL.
  * @param text The text being applied.
  */
-+ (id)diffWithOperation:(Operation)anOperation
++ (id)diffWithOperation:(DMPOperation)anOperation
                 andText:(NSString *)aText;
 {
   return [[[self alloc] initWithOperation:anOperation andText:aText] autorelease];
 }
 
-- (id)initWithOperation:(Operation)anOperation
+- (id)initWithOperation:(DMPOperation)anOperation
                 andText:(NSString *)aText;
 {
   self = [super init];
@@ -499,7 +499,7 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
   NSUInteger i = [longtext rangeOfString:shorttext].location;
   if (i != NSNotFound) {
     // Shorter text is inside the longer text (speedup).
-    Operation op = (text1.length > text2.length) ? DIFF_DELETE : DIFF_INSERT;
+    DMPOperation op = (text1.length > text2.length) ? DIFF_DELETE : DIFF_INSERT;
     [diffs addObject:[DMPDiff diffWithOperation:op andText:[longtext substringWithRange:NSMakeRange(0, i)]]];
     [diffs addObject:[DMPDiff diffWithOperation:DIFF_EQUAL andText:shorttext]];
     [diffs addObject:[DMPDiff diffWithOperation:op andText:[longtext substringFromIndex:(i + shorttext.length)]]];
@@ -2324,7 +2324,7 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
       }
       while (bigpatch.diffs.count != 0
           && patch.length1 < patch_size - self.Patch_Margin) {
-        Operation diff_type = ((DMPDiff *)[bigpatch.diffs objectAtIndex:0]).operation;
+        DMPOperation diff_type = ((DMPDiff *)[bigpatch.diffs objectAtIndex:0]).operation;
         NSString *diff_text = ((DMPDiff *)[bigpatch.diffs objectAtIndex:0]).text;
         if (diff_type == DIFF_INSERT) {
           // Insertions are harmless.
