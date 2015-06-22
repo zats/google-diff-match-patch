@@ -63,7 +63,7 @@ typedef NS_ENUM(NSInteger, DMPOperation) {
 /*
  * Class representing one patch operation.
  */
-@interface Patch : NSObject <NSCopying> {
+@interface DMPPatch : NSObject <NSCopying> {
   NSMutableArray *diffs;
   NSUInteger start1;
   NSUInteger start2;
@@ -154,22 +154,22 @@ typedef NS_ENUM(NSInteger, DMPOperation) {
 
 @interface DiffMatchPatch (PrivateMethods)
 
-- (NSMutableArray *)diff_mainOfOldString:(NSString *)text1 andNewString:(NSString *)text2 checkLines:(BOOL)checklines deadline:(NSTimeInterval)deadline;
-- (NSMutableArray *)diff_computeFromOldString:(NSString *)text1 andNewString:(NSString *)text2 checkLines:(BOOL)checklines deadline:(NSTimeInterval)deadline;
+- (NSMutableArray *)diff_mainOfOldString:(NSString *)text1 andNewString:(NSString *)text2 checkLines:(BOOL)checkLines deadline:(NSTimeInterval)deadline;
+- (NSMutableArray *)diff_computeFromOldString:(NSString *)text1 andNewString:(NSString *)text2 checkLines:(BOOL)checkLines deadline:(NSTimeInterval)deadline;
 - (NSMutableArray *)diff_lineModeFromOldString:(NSString *)text1 andNewString:(NSString *)text2 deadline:(NSTimeInterval)deadline;
-- (NSArray *)diff_linesToCharsForFirstString:(NSString *)text1 andSecondString:(NSString *)text1;
+- (NSArray *)diff_linesToCharsForFirstString:(NSString *)text1 andSecondString:(NSString *)text2;
 - (NSString *)diff_linesToCharsMungeOfText:(NSString *)text lineArray:(NSMutableArray *)lineArray lineHash:(NSMutableDictionary *)lineHash;
 - (void)diff_chars:(NSArray *)diffs toLines:(NSMutableArray *)lineArray;
 - (NSMutableArray *)diff_bisectOfOldString:(NSString *)text1 andNewString:(NSString *)text2 deadline:(NSTimeInterval)deadline;
 - (NSMutableArray *)diff_bisectSplitOfOldString:(NSString *)text1 andNewString:(NSString *)text2 x:(NSUInteger)x y:(NSUInteger)y deadline:(NSTimeInterval)deadline;
 - (NSUInteger)diff_commonOverlapOfFirstString:(NSString *)text1 andSecondString:(NSString *)text2;
 - (NSArray *)diff_halfMatchOfFirstString:(NSString *)text1 andSecondString:(NSString *)text2;
-- (NSArray *)diff_halfMatchIOfLongString:(NSString *)longtext andShortString:(NSString *)shorttext;
+- (NSArray *)diff_halfMatchIOfLongString:(NSString *)longtext andShortString:(NSString *)shortText;
 - (NSInteger)diff_cleanupSemanticScoreOfFirstString:(NSString *)one andSecondString:(NSString *)two;
 
 - (NSUInteger)match_bitapOfText:(NSString *)text andPattern:(NSString *)pattern near:(NSUInteger)loc;
 - (double)match_bitapScoreForErrorCount:(NSUInteger)e location:(NSUInteger)x near:(NSUInteger)loc pattern:(NSString *)pattern;
 
-- (void)patch_addContextToPatch:(Patch *)patch sourceText:(NSString *)text;
+- (void)patch_addContextToPatch:(DMPPatch *)patch sourceText:(NSString *)text;
 
 @end

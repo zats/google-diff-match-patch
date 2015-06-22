@@ -999,13 +999,13 @@
 }
 
 
-#pragma mark Patch Test Functions
+#pragma mark DMPPatch Test Functions
 //  PATCH TEST FUNCTIONS
 
 
 - (void)test_patch_patchObjTest {
-  // Patch Object.
-  Patch *p = [[Patch new] autorelease];
+  // DMPPatch Object.
+  DMPPatch *p = [[DMPPatch new] autorelease];
   p.start1 = 20;
   p.start2 = 21;
   p.length1 = 18;
@@ -1019,7 +1019,7 @@
                   [DMPDiff diffWithOperation:DMPOperationInsert andText:@"a"],
           [DMPDiff diffWithOperation:DMPOperationEqual andText:@"\nlaz"], nil];
   NSString *strp = @"@@ -21,18 +22,17 @@\n jump\n-s\n+ed\n  over \n-the\n+a\n %0Alaz\n";
-  STAssertEqualObjects(strp, [p description], @"Patch: description.");
+  STAssertEqualObjects(strp, [p description], @"DMPPatch: description.");
 }
 
 - (void)test_patch_fromTextTest {
@@ -1038,7 +1038,7 @@
 
   // Generates error.
   NSError *error = nil;
-  NSMutableArray *patches = [dmp patch_fromText:@"Bad\nPatch\n" error:&error];
+  NSMutableArray *patches = [dmp patch_fromText:@"Bad\nDMPPatch\n" error:&error];
   if (patches != nil || error == nil) {
     // Error expected.
     STFail(@"patch_fromText: #5.");
@@ -1067,7 +1067,7 @@
   DiffMatchPatch *dmp = [DiffMatchPatch new];
 
   dmp.Patch_Margin = 4;
-  Patch *p;
+  DMPPatch *p;
   p = [[dmp patch_fromText:@"@@ -21,4 +21,10 @@\n-jump\n+somersault\n" error:NULL] objectAtIndex:0];
   [dmp patch_addContextToPatch:p sourceText:@"The quick brown fox jumps over the lazy dog."];
   STAssertEqualObjects(@"@@ -17,12 +17,18 @@\n fox \n-jump\n+somersault\n s ov\n", [p description], @"patch_addContext: Simple case.");
@@ -1124,7 +1124,7 @@
           [DMPDiff diffWithOperation:DMPOperationDelete andText:@"`1234567890-=[]\\;',./"],
                   [DMPDiff diffWithOperation:DMPOperationInsert andText:@"~!@#$%^&*()_+{}|:\"<>?"], nil];
   STAssertEqualObjects(diffs,
-      ((Patch *)[[dmp patch_fromText:@"@@ -1,21 +1,21 @@\n-%601234567890-=%5B%5D%5C;',./\n+~!@#$%25%5E&*()_+%7B%7D%7C:%22%3C%3E?\n" error:NULL] objectAtIndex:0]).diffs,
+      ((DMPPatch *)[[dmp patch_fromText:@"@@ -1,21 +1,21 @@\n-%601234567890-=%5B%5D%5C;',./\n+~!@#$%25%5E&*()_+%7B%7D%7C:%22%3C%3E?\n" error:NULL] objectAtIndex:0]).diffs,
       @"patch_fromText: Character decoding.");
 
   NSMutableString *text1Mutable = [NSMutableString string];

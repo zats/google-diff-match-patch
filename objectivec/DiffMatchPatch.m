@@ -160,7 +160,7 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
 @end
 
 
-@implementation Patch
+@implementation DMPPatch
 
 @synthesize diffs;
 @synthesize start1;
@@ -188,7 +188,7 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
 
 - (id)copyWithZone:(NSZone *)zone
 {
-  Patch *newPatch = [[[self class] allocWithZone:zone] init];
+  DMPPatch *newPatch = [[[self class] allocWithZone:zone] init];
 
   newPatch.diffs = [[NSMutableArray alloc] initWithArray:self.diffs copyItems:YES];
   newPatch.start1 = self.start1;
@@ -1887,7 +1887,7 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
 }
 
 
-#pragma mark Patch Functions
+#pragma mark DMPPatch Functions
 //  PATCH FUNCTIONS
 
 
@@ -1897,7 +1897,7 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
  * @param patch The patch to grow.
  * @param text Source text.
  */
-- (void)patch_addContextToPatch:(Patch *)patch
+- (void)patch_addContextToPatch:(DMPPatch *)patch
                      sourceText:(NSString *)text;
 {
   if (text.length == 0) {
@@ -1944,7 +1944,7 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
  * A set of diffs will be computed.
  * @param text1 Old text.
  * @param text2 New text.
- * @return NSMutableArray of Patch objects.
+ * @return NSMutableArray of DMPPatch objects.
  */
 - (NSMutableArray *)patch_makeFromOldString:(NSString *)text1
                                andNewString:(NSString *)text2;
@@ -1969,7 +1969,7 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
  * Compute a list of patches to turn text1 into text2.
  * text1 will be derived from the provided diffs.
  * @param diffs NSMutableArray of DMPDiff objects for text1 to text2.
- * @return NSMutableArray of Patch objects.
+ * @return NSMutableArray of DMPPatch objects.
  */
 - (NSMutableArray *)patch_makeFromDiffs:(NSMutableArray *)diffs;
 {
@@ -1985,7 +1985,7 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
  * @param text1 Old text
  * @param text2 New text
  * @param diffs NSMutableArray of DMPDiff objects for text1 to text2.
- * @return NSMutableArray of Patch objects.
+ * @return NSMutableArray of DMPPatch objects.
  * @deprecated Prefer -patch_makeFromOldString:diffs:.
  */
 - (NSMutableArray *)patch_makeFromOldString:(NSString *)text1
@@ -2006,7 +2006,7 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
  * text2 is not provided, diffs are the delta between text1 and text2.
  * @param text1 Old text.
  * @param diffs NSMutableArray of DMPDiff objects for text1 to text2.
- * @return NSMutableArray of Patch objects.
+ * @return NSMutableArray of DMPPatch objects.
  */
 - (NSMutableArray *)patch_makeFromOldString:(NSString *)text1
                                    andDiffs:(NSMutableArray *)diffs;
@@ -2021,7 +2021,7 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
   if (diffs.count == 0) {
     return patches;   // Get rid of the nil case.
   }
-  Patch *patch = [[Patch new] autorelease];
+  DMPPatch *patch = [[DMPPatch new] autorelease];
   NSUInteger char_count1 = 0;  // Number of characters into the text1 NSString.
   NSUInteger char_count2 = 0;  // Number of characters into the text2 NSString.
   // Start with text1 (prepatch_text) and apply the diffs until we arrive at
@@ -2061,7 +2061,7 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
           if (patch.diffs.count != 0) {
             [self patch_addContextToPatch:patch sourceText:prepatch_text];
             [patches addObject:patch];
-            patch = [[Patch new] autorelease];
+            patch = [[DMPPatch new] autorelease];
             // Unlike Unidiff, our patch lists have a rolling context.
             // http://code.google.com/p/google-diff-match-patch/wiki/Unidiff
             // Update prepatch text & pos to reflect the application of the
@@ -2096,8 +2096,8 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
 
 /**
  * Given an array of patches, return another array that is identical.
- * @param patches NSArray of Patch objects.
- * @return NSMutableArray of Patch objects.
+ * @param patches NSArray of DMPPatch objects.
+ * @return NSMutableArray of DMPPatch objects.
  */
 - (NSMutableArray *)patch_deepCopy:(NSArray *)patches;
 {
@@ -2108,7 +2108,7 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
 /**
  * Merge a set of patches onto the text.  Return a patched text, as well
  * as an array of YES/NO values indicating which patches were applied.
- * @param patches NSMutableArray of Patch objects
+ * @param patches NSMutableArray of DMPPatch objects
  * @param text Old text.
  * @return Two element NSArray, containing the new text and an array of
  *      BOOL values.
@@ -2137,7 +2137,7 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
   // and the second patch has an effective expected position of 22.
   NSUInteger delta = 0;
   BOOL *results = (BOOL *)calloc(patches.count, sizeof(BOOL));
-  for (Patch *aPatch in patches) {
+  for (DMPPatch *aPatch in patches) {
     NSUInteger expected_loc = aPatch.start2 + delta;
     NSString *text1 = [self diff_text1:aPatch.diffs];
     NSUInteger start_loc;
@@ -2234,7 +2234,7 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
 /**
  * Add some padding on text start and end so that edges can match something.
  * Intended to be called only from within patch_apply.
- * @param patches NSMutableArray of Patch objects.
+ * @param patches NSMutableArray of DMPPatch objects.
  * @return The padding NSString added to each side.
  */
 - (NSString *)patch_addPadding:(NSMutableArray *)patches;
@@ -2246,13 +2246,13 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
   }
 
   // Bump all the patches forward.
-  for (Patch *aPatch in patches) {
+  for (DMPPatch *aPatch in patches) {
     aPatch.start1 += paddingLength;
     aPatch.start2 += paddingLength;
   }
 
   // Add some padding on start of first diff.
-  Patch *patch = [patches objectAtIndex:0];
+  DMPPatch *patch = [patches objectAtIndex:0];
   NSMutableArray *diffs = patch.diffs;
   if (diffs.count == 0 || ((DMPDiff *)[diffs objectAtIndex:0]).operation != DMPOperationEqual) {
     // Add nullPadding equality.
@@ -2297,16 +2297,16 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
  * Look through the patches and break up any which are longer than the
  * maximum limit of the match algorithm.
  * Intended to be called only from within patch_apply.
- * @param patches NSMutableArray of Patch objects.
+ * @param patches NSMutableArray of DMPPatch objects.
  */
 - (void)patch_splitMax:(NSMutableArray *)patches;
 {
   NSUInteger patch_size = Match_MaxBits;
   for (NSUInteger x = 0; x < patches.count; x++) {
-    if (((Patch *)[patches objectAtIndex:x]).length1 <= patch_size) {
+    if (((DMPPatch *)[patches objectAtIndex:x]).length1 <= patch_size) {
       continue;
     }
-    Patch *bigpatch = [[patches objectAtIndex:x] retain];
+    DMPPatch *bigpatch = [[patches objectAtIndex:x] retain];
     // Remove the big old patch.
     splice(patches, x--, 1, nil);
     NSUInteger start1 = bigpatch.start1;
@@ -2314,7 +2314,7 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
     NSString *precontext = @"";
     while (bigpatch.diffs.count != 0) {
       // Create one of several smaller patches.
-      Patch *patch = [[Patch new] autorelease];
+      DMPPatch *patch = [[DMPPatch new] autorelease];
       BOOL empty = YES;
       patch.start1 = start1 - precontext.length;
       patch.start2 = start2 - precontext.length;
@@ -2401,13 +2401,13 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
 
 /**
  * Take a list of patches and return a textual representation.
- * @param patches NSMutableArray of Patch objects.
+ * @param patches NSMutableArray of DMPPatch objects.
  * @return Text representation of patches.
  */
 - (NSString *)patch_toText:(NSMutableArray *)patches;
 {
   NSMutableString *text = [NSMutableString string];
-  for (Patch *aPatch in patches) {
+  for (DMPPatch *aPatch in patches) {
     [text appendString:[aPatch description]];
   }
   return text;
@@ -2415,10 +2415,10 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
 
 /**
  * Parse a textual representation of patches and return a NSMutableArray of
- * Patch objects.
+ * DMPPatch objects.
  * @param textline Text representation of patches.
  * @param error NSError if invalid input.
- * @return NSMutableArray of Patch objects.
+ * @return NSMutableArray of DMPPatch objects.
  */
 - (NSMutableArray *)patch_fromText:(NSString *)textline
                              error:(NSError **)error;
@@ -2429,7 +2429,7 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
   }
   NSArray *text = [textline componentsSeparatedByString:@"\n"];
   NSUInteger textPointer = 0;
-  Patch *patch;
+  DMPPatch *patch;
   //NSString *patchHeader = @"^@@ -(\\d+),?(\\d*) \\+(\\d+),?(\\d*) @@$";
   NSString *patchHeaderStart = @"@@ -";
   NSString *patchHeaderMid = @"+";
@@ -2444,7 +2444,7 @@ void splice(NSMutableArray *input, NSUInteger start, NSUInteger count, NSArray *
   while (textPointer < text.count) {
     NSString *thisLine = [text objectAtIndex:textPointer];
     NSScanner *theScanner = [NSScanner scannerWithString:thisLine];
-    patch = [[Patch new] autorelease];
+    patch = [[DMPPatch new] autorelease];
 
     scanSuccess = ([theScanner scanString:patchHeaderStart intoString:NULL]
         && [theScanner scanInteger:&scannedValue]);
