@@ -195,16 +195,16 @@
 
   // Convert chars up to lines.
   NSArray *diffs = [NSArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"\001\002\001"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"\002\001\002"], nil];
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"\001\002\001"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"\002\001\002"], nil];
   NSMutableArray *tmpVector = [NSMutableArray array]; // Array of NSString objects.
   [tmpVector addObject:@""];
   [tmpVector addObject:@"alpha\n"];
   [tmpVector addObject:@"beta\n"];
   [dmp diff_chars:diffs toLines:tmpVector];
   NSArray *expectedResult = [NSArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"alpha\nbeta\nalpha\n"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"beta\nalpha\nbeta\n"], nil];
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"alpha\nbeta\nalpha\n"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"beta\nalpha\nbeta\n"], nil];
   STAssertEqualObjects(expectedResult, diffs, @"Shared lines.");
 
   // More than 256 to reveal any 8-bit limitations.
@@ -222,9 +222,9 @@
   STAssertEquals((NSUInteger)n, tmpVector.count, @"More than 256 #1.");
   STAssertEquals((NSUInteger)n, chars.length, @"More than 256 #2.");
   [tmpVector insertObject:@"" atIndex:0];
-  diffs = [NSArray arrayWithObject:[DMPDiff diffWithOperation:DIFF_DELETE andText:chars]];
+  diffs = [NSArray arrayWithObject:[DMPDiff diffWithOperation:DMPOperationDelete andText:chars]];
   [dmp diff_chars:diffs toLines:tmpVector];
-  STAssertEqualObjects([NSArray arrayWithObject:[DMPDiff diffWithOperation:DIFF_DELETE andText:lines]], diffs, @"More than 256 #3.");
+  STAssertEqualObjects([NSArray arrayWithObject:[DMPDiff diffWithOperation:DMPOperationDelete andText:lines]], diffs, @"More than 256 #3.");
 
   [dmp release];
 }
@@ -240,69 +240,69 @@
   STAssertEqualObjects([NSMutableArray array], diffs, @"Null case.");
 
   // No change case.
-  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_EQUAL andText:@"a"], [DMPDiff diffWithOperation:DIFF_DELETE andText:@"b"], [DMPDiff diffWithOperation:DIFF_INSERT andText:@"c"], nil];
+  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationEqual andText:@"a"], [DMPDiff diffWithOperation:DMPOperationDelete andText:@"b"], [DMPDiff diffWithOperation:DMPOperationInsert andText:@"c"], nil];
   [dmp diff_cleanupMerge:diffs];
-  expectedResult = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_EQUAL andText:@"a"], [DMPDiff diffWithOperation:DIFF_DELETE andText:@"b"], [DMPDiff diffWithOperation:DIFF_INSERT andText:@"c"], nil];
+  expectedResult = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationEqual andText:@"a"], [DMPDiff diffWithOperation:DMPOperationDelete andText:@"b"], [DMPDiff diffWithOperation:DMPOperationInsert andText:@"c"], nil];
   STAssertEqualObjects(expectedResult, diffs, @"No change case.");
 
   // Merge equalities.
-  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_EQUAL andText:@"a"], [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"b"], [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"c"], nil];
+  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationEqual andText:@"a"], [DMPDiff diffWithOperation:DMPOperationEqual andText:@"b"], [DMPDiff diffWithOperation:DMPOperationEqual andText:@"c"], nil];
   [dmp diff_cleanupMerge:diffs];
-  expectedResult = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_EQUAL andText:@"abc"], nil];
+  expectedResult = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationEqual andText:@"abc"], nil];
   STAssertEqualObjects(expectedResult, diffs, @"Merge equalities.");
 
   // Merge deletions.
-  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_DELETE andText:@"a"], [DMPDiff diffWithOperation:DIFF_DELETE andText:@"b"], [DMPDiff diffWithOperation:DIFF_DELETE andText:@"c"], nil];
+  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationDelete andText:@"a"], [DMPDiff diffWithOperation:DMPOperationDelete andText:@"b"], [DMPDiff diffWithOperation:DMPOperationDelete andText:@"c"], nil];
   [dmp diff_cleanupMerge:diffs];
-  expectedResult = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_DELETE andText:@"abc"], nil];
+  expectedResult = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationDelete andText:@"abc"], nil];
   STAssertEqualObjects(expectedResult, diffs, @"Merge deletions.");
 
   // Merge insertions.
-  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_INSERT andText:@"a"], [DMPDiff diffWithOperation:DIFF_INSERT andText:@"b"], [DMPDiff diffWithOperation:DIFF_INSERT andText:@"c"], nil];
+  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationInsert andText:@"a"], [DMPDiff diffWithOperation:DMPOperationInsert andText:@"b"], [DMPDiff diffWithOperation:DMPOperationInsert andText:@"c"], nil];
   [dmp diff_cleanupMerge:diffs];
-  expectedResult = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_INSERT andText:@"abc"], nil];
+  expectedResult = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationInsert andText:@"abc"], nil];
   STAssertEqualObjects(expectedResult, diffs, @"Merge insertions.");
 
   // Merge interweave.
-  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_DELETE andText:@"a"], [DMPDiff diffWithOperation:DIFF_INSERT andText:@"b"], [DMPDiff diffWithOperation:DIFF_DELETE andText:@"c"], [DMPDiff diffWithOperation:DIFF_INSERT andText:@"d"], [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"e"], [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"f"], nil];
+  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationDelete andText:@"a"], [DMPDiff diffWithOperation:DMPOperationInsert andText:@"b"], [DMPDiff diffWithOperation:DMPOperationDelete andText:@"c"], [DMPDiff diffWithOperation:DMPOperationInsert andText:@"d"], [DMPDiff diffWithOperation:DMPOperationEqual andText:@"e"], [DMPDiff diffWithOperation:DMPOperationEqual andText:@"f"], nil];
   [dmp diff_cleanupMerge:diffs];
-  expectedResult = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_DELETE andText:@"ac"], [DMPDiff diffWithOperation:DIFF_INSERT andText:@"bd"], [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"ef"], nil];
+  expectedResult = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationDelete andText:@"ac"], [DMPDiff diffWithOperation:DMPOperationInsert andText:@"bd"], [DMPDiff diffWithOperation:DMPOperationEqual andText:@"ef"], nil];
   STAssertEqualObjects(expectedResult, diffs, @"Merge interweave.");
 
   // Prefix and suffix detection.
-  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_DELETE andText:@"a"], [DMPDiff diffWithOperation:DIFF_INSERT andText:@"abc"], [DMPDiff diffWithOperation:DIFF_DELETE andText:@"dc"], nil];
+  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationDelete andText:@"a"], [DMPDiff diffWithOperation:DMPOperationInsert andText:@"abc"], [DMPDiff diffWithOperation:DMPOperationDelete andText:@"dc"], nil];
   [dmp diff_cleanupMerge:diffs];
-  expectedResult = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_EQUAL andText:@"a"], [DMPDiff diffWithOperation:DIFF_DELETE andText:@"d"], [DMPDiff diffWithOperation:DIFF_INSERT andText:@"b"], [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"c"], nil];
+  expectedResult = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationEqual andText:@"a"], [DMPDiff diffWithOperation:DMPOperationDelete andText:@"d"], [DMPDiff diffWithOperation:DMPOperationInsert andText:@"b"], [DMPDiff diffWithOperation:DMPOperationEqual andText:@"c"], nil];
   STAssertEqualObjects(expectedResult, diffs, @"Prefix and suffix detection.");
 
   // Prefix and suffix detection with equalities.
-  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_EQUAL andText:@"x"], [DMPDiff diffWithOperation:DIFF_DELETE andText:@"a"], [DMPDiff diffWithOperation:DIFF_INSERT andText:@"abc"], [DMPDiff diffWithOperation:DIFF_DELETE andText:@"dc"], [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"y"], nil];
+  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationEqual andText:@"x"], [DMPDiff diffWithOperation:DMPOperationDelete andText:@"a"], [DMPDiff diffWithOperation:DMPOperationInsert andText:@"abc"], [DMPDiff diffWithOperation:DMPOperationDelete andText:@"dc"], [DMPDiff diffWithOperation:DMPOperationEqual andText:@"y"], nil];
   [dmp diff_cleanupMerge:diffs];
-  expectedResult = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_EQUAL andText:@"xa"], [DMPDiff diffWithOperation:DIFF_DELETE andText:@"d"], [DMPDiff diffWithOperation:DIFF_INSERT andText:@"b"], [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"cy"], nil];
+  expectedResult = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationEqual andText:@"xa"], [DMPDiff diffWithOperation:DMPOperationDelete andText:@"d"], [DMPDiff diffWithOperation:DMPOperationInsert andText:@"b"], [DMPDiff diffWithOperation:DMPOperationEqual andText:@"cy"], nil];
   STAssertEqualObjects(expectedResult, diffs, @"Prefix and suffix detection with equalities.");
 
   // Slide edit left.
-  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_EQUAL andText:@"a"], [DMPDiff diffWithOperation:DIFF_INSERT andText:@"ba"], [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"c"], nil];
+  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationEqual andText:@"a"], [DMPDiff diffWithOperation:DMPOperationInsert andText:@"ba"], [DMPDiff diffWithOperation:DMPOperationEqual andText:@"c"], nil];
   [dmp diff_cleanupMerge:diffs];
-  expectedResult = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_INSERT andText:@"ab"], [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"ac"], nil];
+  expectedResult = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationInsert andText:@"ab"], [DMPDiff diffWithOperation:DMPOperationEqual andText:@"ac"], nil];
   STAssertEqualObjects(expectedResult, diffs, @"Slide edit left.");
 
   // Slide edit right.
-  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_EQUAL andText:@"c"], [DMPDiff diffWithOperation:DIFF_INSERT andText:@"ab"], [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"a"], nil];
+  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationEqual andText:@"c"], [DMPDiff diffWithOperation:DMPOperationInsert andText:@"ab"], [DMPDiff diffWithOperation:DMPOperationEqual andText:@"a"], nil];
   [dmp diff_cleanupMerge:diffs];
-  expectedResult = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_EQUAL andText:@"ca"], [DMPDiff diffWithOperation:DIFF_INSERT andText:@"ba"], nil];
+  expectedResult = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationEqual andText:@"ca"], [DMPDiff diffWithOperation:DMPOperationInsert andText:@"ba"], nil];
   STAssertEqualObjects(expectedResult, diffs, @"Slide edit right.");
 
   // Slide edit left recursive.
-  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_EQUAL andText:@"a"], [DMPDiff diffWithOperation:DIFF_DELETE andText:@"b"], [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"c"], [DMPDiff diffWithOperation:DIFF_DELETE andText:@"ac"], [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"x"], nil];
+  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationEqual andText:@"a"], [DMPDiff diffWithOperation:DMPOperationDelete andText:@"b"], [DMPDiff diffWithOperation:DMPOperationEqual andText:@"c"], [DMPDiff diffWithOperation:DMPOperationDelete andText:@"ac"], [DMPDiff diffWithOperation:DMPOperationEqual andText:@"x"], nil];
   [dmp diff_cleanupMerge:diffs];
-  expectedResult = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_DELETE andText:@"abc"], [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"acx"], nil];
+  expectedResult = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationDelete andText:@"abc"], [DMPDiff diffWithOperation:DMPOperationEqual andText:@"acx"], nil];
   STAssertEqualObjects(expectedResult, diffs, @"Slide edit left recursive.");
 
   // Slide edit right recursive.
-  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_EQUAL andText:@"x"], [DMPDiff diffWithOperation:DIFF_DELETE andText:@"ca"], [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"c"], [DMPDiff diffWithOperation:DIFF_DELETE andText:@"b"], [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"a"], nil];
+  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationEqual andText:@"x"], [DMPDiff diffWithOperation:DMPOperationDelete andText:@"ca"], [DMPDiff diffWithOperation:DMPOperationEqual andText:@"c"], [DMPDiff diffWithOperation:DMPOperationDelete andText:@"b"], [DMPDiff diffWithOperation:DMPOperationEqual andText:@"a"], nil];
   [dmp diff_cleanupMerge:diffs];
-  expectedResult = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_EQUAL andText:@"xca"], [DMPDiff diffWithOperation:DIFF_DELETE andText:@"cba"], nil];
+  expectedResult = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationEqual andText:@"xca"], [DMPDiff diffWithOperation:DMPOperationDelete andText:@"cba"], nil];
   STAssertEqualObjects(expectedResult, diffs, @"Slide edit right recursive.");
 
   [dmp release];
@@ -320,84 +320,84 @@
 
   // Blank lines.
   diffs = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"AAA\r\n\r\nBBB"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"\r\nDDD\r\n\r\nBBB"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"\r\nEEE"], nil];
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"AAA\r\n\r\nBBB"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"\r\nDDD\r\n\r\nBBB"],
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"\r\nEEE"], nil];
   [dmp diff_cleanupSemanticLossless:diffs];
   expectedResult = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"AAA\r\n\r\n"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"BBB\r\nDDD\r\n\r\n"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"BBB\r\nEEE"], nil];
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"AAA\r\n\r\n"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"BBB\r\nDDD\r\n\r\n"],
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"BBB\r\nEEE"], nil];
   STAssertEqualObjects(expectedResult, diffs, @"Blank lines.");
 
   // Line boundaries.
   diffs = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"AAA\r\nBBB"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@" DDD\r\nBBB"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@" EEE"], nil];
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"AAA\r\nBBB"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@" DDD\r\nBBB"],
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@" EEE"], nil];
   [dmp diff_cleanupSemanticLossless:diffs];
   expectedResult = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"AAA\r\n"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"BBB DDD\r\n"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"BBB EEE"], nil];
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"AAA\r\n"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"BBB DDD\r\n"],
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"BBB EEE"], nil];
   STAssertEqualObjects(expectedResult, diffs, @"Line boundaries.");
 
   // Word boundaries.
   diffs = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"The c"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"ow and the c"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"at."], nil];
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"The c"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"ow and the c"],
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"at."], nil];
   [dmp diff_cleanupSemanticLossless:diffs];
   expectedResult = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"The "],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"cow and the "],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"cat."], nil];
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"The "],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"cow and the "],
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"cat."], nil];
   STAssertEqualObjects(expectedResult, diffs, @"Word boundaries.");
 
   // Alphanumeric boundaries.
   diffs = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"The-c"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"ow-and-the-c"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"at."], nil];
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"The-c"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"ow-and-the-c"],
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"at."], nil];
   [dmp diff_cleanupSemanticLossless:diffs];
   expectedResult = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"The-"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"cow-and-the-"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"cat."], nil];
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"The-"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"cow-and-the-"],
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"cat."], nil];
   STAssertEqualObjects(expectedResult, diffs, @"Alphanumeric boundaries.");
 
   // Hitting the start.
   diffs = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"a"],
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"a"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"ax"], nil];
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"a"],
+                  [DMPDiff diffWithOperation:DMPOperationDelete andText:@"a"],
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"ax"], nil];
   [dmp diff_cleanupSemanticLossless:diffs];
   expectedResult = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"a"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"aax"], nil];
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"a"],
+                  [DMPDiff diffWithOperation:DMPOperationEqual andText:@"aax"], nil];
   STAssertEqualObjects(expectedResult, diffs, @"Hitting the start.");
 
   // Hitting the end.
   diffs = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"xa"],
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"a"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"a"], nil];
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"xa"],
+                  [DMPDiff diffWithOperation:DMPOperationDelete andText:@"a"],
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"a"], nil];
   [dmp diff_cleanupSemanticLossless:diffs];
   expectedResult = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"xaa"],
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"a"], nil];
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"xaa"],
+                  [DMPDiff diffWithOperation:DMPOperationDelete andText:@"a"], nil];
   STAssertEqualObjects(expectedResult, diffs, @"Hitting the end.");
 
   // Alphanumeric boundaries.
   diffs = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"The xxx. The "],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"zzz. The "],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"yyy."], nil];
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"The xxx. The "],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"zzz. The "],
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"yyy."], nil];
   [dmp diff_cleanupSemanticLossless:diffs];
   expectedResult = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"The xxx."],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@" The zzz."],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@" The yyy."], nil];
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"The xxx."],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@" The zzz."],
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@" The yyy."], nil];
   STAssertEqualObjects(expectedResult, diffs, @"Sentence boundaries.");
 
   [dmp release];
@@ -415,133 +415,133 @@
 
   // No elimination #1.
   diffs = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"ab"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"cd"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"12"],
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"e"], nil];
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"ab"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"cd"],
+                  [DMPDiff diffWithOperation:DMPOperationEqual andText:@"12"],
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"e"], nil];
   [dmp diff_cleanupSemantic:diffs];
   expectedResult = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"ab"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"cd"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"12"],
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"e"], nil];
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"ab"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"cd"],
+                  [DMPDiff diffWithOperation:DMPOperationEqual andText:@"12"],
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"e"], nil];
   STAssertEqualObjects(expectedResult, diffs, @"No elimination #1.");
 
   // No elimination #2.
   diffs = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"abc"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"ABC"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"1234"],
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"wxyz"], nil];
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"abc"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"ABC"],
+                  [DMPDiff diffWithOperation:DMPOperationEqual andText:@"1234"],
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"wxyz"], nil];
   [dmp diff_cleanupSemantic:diffs];
   expectedResult = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"abc"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"ABC"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"1234"],
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"wxyz"], nil];
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"abc"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"ABC"],
+                  [DMPDiff diffWithOperation:DMPOperationEqual andText:@"1234"],
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"wxyz"], nil];
   STAssertEqualObjects(expectedResult, diffs, @"No elimination #2.");
 
   // Simple elimination.
   diffs = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"a"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"b"],
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"c"], nil];
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"a"],
+                  [DMPDiff diffWithOperation:DMPOperationEqual andText:@"b"],
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"c"], nil];
   [dmp diff_cleanupSemantic:diffs];
   expectedResult = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"abc"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"b"], nil];
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"abc"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"b"], nil];
   STAssertEqualObjects(expectedResult, diffs, @"Simple elimination.");
 
   // Backpass elimination.
   diffs = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"ab"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"cd"],
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"e"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"f"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"g"], nil];
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"ab"],
+                  [DMPDiff diffWithOperation:DMPOperationEqual andText:@"cd"],
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"e"],
+                  [DMPDiff diffWithOperation:DMPOperationEqual andText:@"f"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"g"], nil];
   [dmp diff_cleanupSemantic:diffs];
   expectedResult = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"abcdef"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"cdfg"], nil];
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"abcdef"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"cdfg"], nil];
   STAssertEqualObjects(expectedResult, diffs, @"Backpass elimination.");
 
   // Multiple eliminations.
   diffs = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"1"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"A"],
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"B"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"2"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"_"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"1"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"A"],
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"B"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"2"], nil];
+          [DMPDiff diffWithOperation:DMPOperationInsert andText:@"1"],
+                  [DMPDiff diffWithOperation:DMPOperationEqual andText:@"A"],
+                  [DMPDiff diffWithOperation:DMPOperationDelete andText:@"B"],
+          [DMPDiff diffWithOperation:DMPOperationInsert andText:@"2"],
+                  [DMPDiff diffWithOperation:DMPOperationEqual andText:@"_"],
+          [DMPDiff diffWithOperation:DMPOperationInsert andText:@"1"],
+                  [DMPDiff diffWithOperation:DMPOperationEqual andText:@"A"],
+                  [DMPDiff diffWithOperation:DMPOperationDelete andText:@"B"],
+          [DMPDiff diffWithOperation:DMPOperationInsert andText:@"2"], nil];
   [dmp diff_cleanupSemantic:diffs];
   expectedResult = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"AB_AB"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"1A2_1A2"], nil];
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"AB_AB"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"1A2_1A2"], nil];
   STAssertEqualObjects(expectedResult, diffs, @"Multiple eliminations.");
 
   // Word boundaries.
   diffs = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"The c"],
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"ow and the c"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"at."], nil];
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"The c"],
+                  [DMPDiff diffWithOperation:DMPOperationDelete andText:@"ow and the c"],
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"at."], nil];
   [dmp diff_cleanupSemantic:diffs];
   expectedResult = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"The "],
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"cow and the "],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"cat."], nil];
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"The "],
+                  [DMPDiff diffWithOperation:DMPOperationDelete andText:@"cow and the "],
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"cat."], nil];
   STAssertEqualObjects(expectedResult, diffs, @"Word boundaries.");
 
   // No overlap elimination.
   diffs = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"abcxx"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"xxdef"], nil];
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"abcxx"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"xxdef"], nil];
   [dmp diff_cleanupSemantic:diffs];
   expectedResult = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"abcxx"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"xxdef"], nil];
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"abcxx"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"xxdef"], nil];
   STAssertEqualObjects(expectedResult, diffs, @"No overlap elimination.");
 
   // Overlap elimination.
   diffs = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"abcxxx"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"xxxdef"], nil];
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"abcxxx"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"xxxdef"], nil];
   [dmp diff_cleanupSemantic:diffs];
   expectedResult = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"abc"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"xxx"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"def"], nil];
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"abc"],
+                  [DMPDiff diffWithOperation:DMPOperationEqual andText:@"xxx"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"def"], nil];
   STAssertEqualObjects(expectedResult, diffs, @"Overlap elimination.");
 
   // Reverse overlap elimination.
   diffs = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"xxxabc"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"defxxx"], nil];
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"xxxabc"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"defxxx"], nil];
   [dmp diff_cleanupSemantic:diffs];
   expectedResult = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"def"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"xxx"],
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"abc"], nil];
+          [DMPDiff diffWithOperation:DMPOperationInsert andText:@"def"],
+                  [DMPDiff diffWithOperation:DMPOperationEqual andText:@"xxx"],
+                  [DMPDiff diffWithOperation:DMPOperationDelete andText:@"abc"], nil];
   STAssertEqualObjects(expectedResult, diffs, @"Reverse overlap elimination.");
 
   // Two overlap eliminations.
   diffs = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"abcd1212"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"1212efghi"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"----"],
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"A3"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"3BC"], nil];
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"abcd1212"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"1212efghi"],
+                  [DMPDiff diffWithOperation:DMPOperationEqual andText:@"----"],
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"A3"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"3BC"], nil];
   [dmp diff_cleanupSemantic:diffs];
   expectedResult = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"abcd"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"1212"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"efghi"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"----"],
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"A"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"3"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"BC"], nil];
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"abcd"],
+                  [DMPDiff diffWithOperation:DMPOperationEqual andText:@"1212"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"efghi"],
+                  [DMPDiff diffWithOperation:DMPOperationEqual andText:@"----"],
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"A"],
+                  [DMPDiff diffWithOperation:DMPOperationEqual andText:@"3"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"BC"], nil];
   STAssertEqualObjects(expectedResult, diffs, @"Two overlap eliminations.");
 
   [dmp release];
@@ -560,72 +560,72 @@
 
   // No elimination.
   diffs = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"ab"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"12"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"wxyz"],
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"cd"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"34"], nil];
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"ab"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"12"],
+                  [DMPDiff diffWithOperation:DMPOperationEqual andText:@"wxyz"],
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"cd"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"34"], nil];
   [dmp diff_cleanupEfficiency:diffs];
   expectedResult = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"ab"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"12"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"wxyz"],
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"cd"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"34"], nil];
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"ab"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"12"],
+                  [DMPDiff diffWithOperation:DMPOperationEqual andText:@"wxyz"],
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"cd"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"34"], nil];
   STAssertEqualObjects(expectedResult, diffs, @"No elimination.");
 
   // Four-edit elimination.
   diffs = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"ab"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"12"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"xyz"],
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"cd"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"34"], nil];
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"ab"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"12"],
+                  [DMPDiff diffWithOperation:DMPOperationEqual andText:@"xyz"],
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"cd"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"34"], nil];
   [dmp diff_cleanupEfficiency:diffs];
   expectedResult = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"abxyzcd"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"12xyz34"], nil];
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"abxyzcd"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"12xyz34"], nil];
   STAssertEqualObjects(expectedResult, diffs, @"Four-edit elimination.");
 
   // Three-edit elimination.
   diffs = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"12"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"x"],
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"cd"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"34"], nil];
+          [DMPDiff diffWithOperation:DMPOperationInsert andText:@"12"],
+                  [DMPDiff diffWithOperation:DMPOperationEqual andText:@"x"],
+                  [DMPDiff diffWithOperation:DMPOperationDelete andText:@"cd"],
+          [DMPDiff diffWithOperation:DMPOperationInsert andText:@"34"], nil];
   [dmp diff_cleanupEfficiency:diffs];
   expectedResult = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"xcd"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"12x34"], nil];
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"xcd"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"12x34"], nil];
   STAssertEqualObjects(expectedResult, diffs, @"Three-edit elimination.");
 
   // Backpass elimination.
   diffs = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"ab"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"12"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"xy"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"34"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"z"],
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"cd"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"56"], nil];
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"ab"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"12"],
+                  [DMPDiff diffWithOperation:DMPOperationEqual andText:@"xy"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"34"],
+                  [DMPDiff diffWithOperation:DMPOperationEqual andText:@"z"],
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"cd"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"56"], nil];
   [dmp diff_cleanupEfficiency:diffs];
   expectedResult = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"abxyzcd"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"12xy34z56"], nil];
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"abxyzcd"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"12xy34z56"], nil];
   STAssertEqualObjects(expectedResult, diffs, @"Backpass elimination.");
 
   // High cost elimination.
   dmp.Diff_EditCost = 5;
   diffs = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"ab"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"12"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"wxyz"],
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"cd"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"34"], nil];
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"ab"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"12"],
+                  [DMPDiff diffWithOperation:DMPOperationEqual andText:@"wxyz"],
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"cd"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"34"], nil];
   [dmp diff_cleanupEfficiency:diffs];
   expectedResult = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"abwxyzcd"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"12wxyz34"], nil];
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"abwxyzcd"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"12wxyz34"], nil];
   STAssertEqualObjects(expectedResult, diffs, @"High cost elimination.");
   dmp.Diff_EditCost = 4;
 
@@ -637,9 +637,9 @@
 
   // Pretty print.
   NSMutableArray *diffs = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"a\n"],
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"<B>b</B>"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"c&d"], nil];
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"a\n"],
+                  [DMPDiff diffWithOperation:DMPOperationDelete andText:@"<B>b</B>"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"c&d"], nil];
   NSString *expectedResult = @"<span>a&para;<br></span><del style=\"background:#ffe6e6;\">&lt;B&gt;b&lt;/B&gt;</del><ins style=\"background:#e6ffe6;\">c&amp;d</ins>";
   STAssertEqualObjects(expectedResult, [dmp diff_prettyHtml:diffs], @"Pretty print.");
 
@@ -651,13 +651,13 @@
 
   // Compute the source and destination texts.
   NSMutableArray *diffs = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"jump"],
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"s"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"ed"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@" over "],
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"the"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"a"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@" lazy"], nil];
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"jump"],
+                  [DMPDiff diffWithOperation:DMPOperationDelete andText:@"s"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"ed"],
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@" over "],
+                  [DMPDiff diffWithOperation:DMPOperationDelete andText:@"the"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"a"],
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@" lazy"], nil];
   STAssertEqualObjects(@"jumps over the lazy", [dmp diff_text1:diffs], @"Compute the source and destination texts #1");
 
   STAssertEqualObjects(@"jumped over a lazy", [dmp diff_text2:diffs], @"Compute the source and destination texts #2");
@@ -672,14 +672,14 @@
 
   // Convert a diff into delta string.
   NSMutableArray *diffs = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"jump"],
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"s"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"ed"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@" over "],
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"the"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"a"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@" lazy"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"old dog"], nil];
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"jump"],
+                  [DMPDiff diffWithOperation:DMPOperationDelete andText:@"s"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"ed"],
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@" over "],
+                  [DMPDiff diffWithOperation:DMPOperationDelete andText:@"the"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"a"],
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@" lazy"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"old dog"], nil];
   NSString *text1 = [dmp diff_text1:diffs];
   STAssertEqualObjects(@"jumps over the lazy", text1, @"Convert a diff into delta string 1.");
 
@@ -715,9 +715,9 @@
   unichar one = (unichar)1;
   unichar two = (unichar)2;
   diffs = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:[NSString stringWithFormat:@"\U00000680 %C \t %%", zero]],
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:[NSString stringWithFormat:@"\U00000681 %C \n ^", one]],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:[NSString stringWithFormat:@"\U00000682 %C \\ |", two]], nil];
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:[NSString stringWithFormat:@"\U00000680 %C \t %%", zero]],
+                  [DMPDiff diffWithOperation:DMPOperationDelete andText:[NSString stringWithFormat:@"\U00000681 %C \n ^", one]],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:[NSString stringWithFormat:@"\U00000682 %C \\ |", two]], nil];
   text1 = [dmp diff_text1:diffs];
   NSString *expectedString = [NSString stringWithFormat:@"\U00000680 %C \t %%\U00000681 %C \n ^", zero, one];
   STAssertEqualObjects(expectedString, text1, @"Test deltas with special characters.");
@@ -730,7 +730,7 @@
 
   // Verify pool of unchanged characters.
   diffs = [NSMutableArray arrayWithObject:
-       [DMPDiff diffWithOperation:DIFF_INSERT andText:@"A-Z a-z 0-9 - _ . ! ~ * ' ( ) ; / ? : @ & = + $ , # "]];
+          [DMPDiff diffWithOperation:DMPOperationInsert andText:@"A-Z a-z 0-9 - _ . ! ~ * ' ( ) ; / ? : @ & = + $ , # "]];
   NSString *text2 = [dmp diff_text2:diffs];
   STAssertEqualObjects(@"A-Z a-z 0-9 - _ . ! ~ * ' ( ) ; / ? : @ & = + $ , # ", text2, @"diff_text2: Unchanged characters 1.");
 
@@ -749,15 +749,15 @@
 
   // Translate a location in text1 to text2.
   NSMutableArray *diffs = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"a"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"1234"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"xyz"], nil] /* DMPDiff */;
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"a"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"1234"],
+                  [DMPDiff diffWithOperation:DMPOperationEqual andText:@"xyz"], nil] /* DMPDiff */;
   STAssertEquals((NSUInteger)5, [dmp diff_xIndexIn:diffs location:2], @"diff_xIndex: Translation on equality. Translate a location in text1 to text2.");
 
   diffs = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"a"],
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"1234"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"xyz"], nil] /* DMPDiff */;
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"a"],
+                  [DMPDiff diffWithOperation:DMPOperationDelete andText:@"1234"],
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"xyz"], nil] /* DMPDiff */;
   STAssertEquals((NSUInteger)1, [dmp diff_xIndexIn:diffs location:3], @"diff_xIndex: Translation on deletion.");
 
   [dmp release];
@@ -767,21 +767,21 @@
   DiffMatchPatch *dmp = [DiffMatchPatch new];
 
   NSMutableArray *diffs = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"abc"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"1234"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"xyz"], nil] /* DMPDiff */;
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"abc"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"1234"],
+                  [DMPDiff diffWithOperation:DMPOperationEqual andText:@"xyz"], nil] /* DMPDiff */;
   STAssertEquals((NSUInteger)4, [dmp diff_levenshtein:diffs], @"diff_levenshtein: Levenshtein with trailing equality.");
 
   diffs = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"xyz"],
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"abc"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"1234"], nil] /* DMPDiff */;
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"xyz"],
+                  [DMPDiff diffWithOperation:DMPOperationDelete andText:@"abc"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"1234"], nil] /* DMPDiff */;
   STAssertEquals((NSUInteger)4, [dmp diff_levenshtein:diffs], @"diff_levenshtein: Levenshtein with leading equality.");
 
   diffs = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"abc"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"xyz"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"1234"], nil] /* DMPDiff */;
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"abc"],
+                  [DMPDiff diffWithOperation:DMPOperationEqual andText:@"xyz"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"1234"], nil] /* DMPDiff */;
   STAssertEquals((NSUInteger)7, [dmp diff_levenshtein:diffs], @"diff_levenshtein: Levenshtein with middle equality.");
 
   [dmp release];
@@ -797,11 +797,11 @@
   // Since the resulting diff hasn't been normalized, it would be ok if
   // the insertion and deletion pairs are swapped.
   // If the order changes, tweak this test as required.
-  NSMutableArray *diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_DELETE andText:@"c"], [DMPDiff diffWithOperation:DIFF_INSERT andText:@"m"], [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"a"], [DMPDiff diffWithOperation:DIFF_DELETE andText:@"t"], [DMPDiff diffWithOperation:DIFF_INSERT andText:@"p"], nil];
+  NSMutableArray *diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationDelete andText:@"c"], [DMPDiff diffWithOperation:DMPOperationInsert andText:@"m"], [DMPDiff diffWithOperation:DMPOperationEqual andText:@"a"], [DMPDiff diffWithOperation:DMPOperationDelete andText:@"t"], [DMPDiff diffWithOperation:DMPOperationInsert andText:@"p"], nil];
   STAssertEqualObjects(diffs, [dmp diff_bisectOfOldString:a andNewString:b deadline:[[NSDate distantFuture] timeIntervalSinceReferenceDate]], @"Bisect test.");
 
   // Timeout.
-  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_DELETE andText:@"cat"], [DMPDiff diffWithOperation:DIFF_INSERT andText:@"map"], nil];
+  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationDelete andText:@"cat"], [DMPDiff diffWithOperation:DMPOperationInsert andText:@"map"], nil];
   STAssertEqualObjects(diffs, [dmp diff_bisectOfOldString:a andNewString:b deadline:[[NSDate distantPast] timeIntervalSinceReferenceDate]], @"Bisect timeout.");
 
   [dmp release];
@@ -814,44 +814,44 @@
   NSMutableArray *diffs = [NSMutableArray array];
   STAssertEqualObjects(diffs, [dmp diff_mainOfOldString:@"" andNewString:@"" checkLines:NO], @"diff_main: Null case.");
 
-  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_EQUAL andText:@"abc"], nil];
+  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationEqual andText:@"abc"], nil];
   STAssertEqualObjects(diffs, [dmp diff_mainOfOldString:@"abc" andNewString:@"abc" checkLines:NO], @"diff_main: Equality.");
 
-  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_EQUAL andText:@"ab"], [DMPDiff diffWithOperation:DIFF_INSERT andText:@"123"], [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"c"], nil];
+  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationEqual andText:@"ab"], [DMPDiff diffWithOperation:DMPOperationInsert andText:@"123"], [DMPDiff diffWithOperation:DMPOperationEqual andText:@"c"], nil];
   STAssertEqualObjects(diffs, [dmp diff_mainOfOldString:@"abc" andNewString:@"ab123c" checkLines:NO], @"diff_main: Simple insertion.");
 
-  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_EQUAL andText:@"a"], [DMPDiff diffWithOperation:DIFF_DELETE andText:@"123"], [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"bc"], nil];
+  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationEqual andText:@"a"], [DMPDiff diffWithOperation:DMPOperationDelete andText:@"123"], [DMPDiff diffWithOperation:DMPOperationEqual andText:@"bc"], nil];
   STAssertEqualObjects(diffs, [dmp diff_mainOfOldString:@"a123bc" andNewString:@"abc" checkLines:NO], @"diff_main: Simple deletion.");
 
-  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_EQUAL andText:@"a"], [DMPDiff diffWithOperation:DIFF_INSERT andText:@"123"], [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"b"], [DMPDiff diffWithOperation:DIFF_INSERT andText:@"456"], [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"c"], nil];
+  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationEqual andText:@"a"], [DMPDiff diffWithOperation:DMPOperationInsert andText:@"123"], [DMPDiff diffWithOperation:DMPOperationEqual andText:@"b"], [DMPDiff diffWithOperation:DMPOperationInsert andText:@"456"], [DMPDiff diffWithOperation:DMPOperationEqual andText:@"c"], nil];
   STAssertEqualObjects(diffs, [dmp diff_mainOfOldString:@"abc" andNewString:@"a123b456c" checkLines:NO], @"diff_main: Two insertions.");
 
-  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_EQUAL andText:@"a"], [DMPDiff diffWithOperation:DIFF_DELETE andText:@"123"], [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"b"], [DMPDiff diffWithOperation:DIFF_DELETE andText:@"456"], [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"c"], nil];
+  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationEqual andText:@"a"], [DMPDiff diffWithOperation:DMPOperationDelete andText:@"123"], [DMPDiff diffWithOperation:DMPOperationEqual andText:@"b"], [DMPDiff diffWithOperation:DMPOperationDelete andText:@"456"], [DMPDiff diffWithOperation:DMPOperationEqual andText:@"c"], nil];
   STAssertEqualObjects(diffs, [dmp diff_mainOfOldString:@"a123b456c" andNewString:@"abc" checkLines:NO], @"diff_main: Two deletions.");
 
   // Perform a real diff.
   // Switch off the timeout.
   dmp.Diff_Timeout = 0;
-  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_DELETE andText:@"a"], [DMPDiff diffWithOperation:DIFF_INSERT andText:@"b"], nil];
+  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationDelete andText:@"a"], [DMPDiff diffWithOperation:DMPOperationInsert andText:@"b"], nil];
   STAssertEqualObjects(diffs, [dmp diff_mainOfOldString:@"a" andNewString:@"b" checkLines:NO], @"diff_main: Simple case #1.");
 
-  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_DELETE andText:@"Apple"], [DMPDiff diffWithOperation:DIFF_INSERT andText:@"Banana"], [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"s are a"], [DMPDiff diffWithOperation:DIFF_INSERT andText:@"lso"], [DMPDiff diffWithOperation:DIFF_EQUAL andText:@" fruit."], nil];
+  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationDelete andText:@"Apple"], [DMPDiff diffWithOperation:DMPOperationInsert andText:@"Banana"], [DMPDiff diffWithOperation:DMPOperationEqual andText:@"s are a"], [DMPDiff diffWithOperation:DMPOperationInsert andText:@"lso"], [DMPDiff diffWithOperation:DMPOperationEqual andText:@" fruit."], nil];
   STAssertEqualObjects(diffs, [dmp diff_mainOfOldString:@"Apples are a fruit." andNewString:@"Bananas are also fruit." checkLines:NO], @"diff_main: Simple case #2.");
 
-  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_DELETE andText:@"a"], [DMPDiff diffWithOperation:DIFF_INSERT andText:@"\U00000680"], [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"x"], [DMPDiff diffWithOperation:DIFF_DELETE andText:@"\t"], [DMPDiff diffWithOperation:DIFF_INSERT andText:[NSString stringWithFormat:@"%C", 0]], nil];
+  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationDelete andText:@"a"], [DMPDiff diffWithOperation:DMPOperationInsert andText:@"\U00000680"], [DMPDiff diffWithOperation:DMPOperationEqual andText:@"x"], [DMPDiff diffWithOperation:DMPOperationDelete andText:@"\t"], [DMPDiff diffWithOperation:DMPOperationInsert andText:[NSString stringWithFormat:@"%C", 0]], nil];
   NSString *aString = [NSString stringWithFormat:@"\U00000680x%C", 0];
   STAssertEqualObjects(diffs, [dmp diff_mainOfOldString:@"ax\t" andNewString:aString checkLines:NO], @"diff_main: Simple case #3.");
 
-  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_DELETE andText:@"1"], [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"a"], [DMPDiff diffWithOperation:DIFF_DELETE andText:@"y"], [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"b"], [DMPDiff diffWithOperation:DIFF_DELETE andText:@"2"], [DMPDiff diffWithOperation:DIFF_INSERT andText:@"xab"], nil];
+  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationDelete andText:@"1"], [DMPDiff diffWithOperation:DMPOperationEqual andText:@"a"], [DMPDiff diffWithOperation:DMPOperationDelete andText:@"y"], [DMPDiff diffWithOperation:DMPOperationEqual andText:@"b"], [DMPDiff diffWithOperation:DMPOperationDelete andText:@"2"], [DMPDiff diffWithOperation:DMPOperationInsert andText:@"xab"], nil];
   STAssertEqualObjects(diffs, [dmp diff_mainOfOldString:@"1ayb2" andNewString:@"abxab" checkLines:NO], @"diff_main: Overlap #1.");
 
-  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_INSERT andText:@"xaxcx"], [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"abc"], [DMPDiff diffWithOperation:DIFF_DELETE andText:@"y"], nil];
+  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationInsert andText:@"xaxcx"], [DMPDiff diffWithOperation:DMPOperationEqual andText:@"abc"], [DMPDiff diffWithOperation:DMPOperationDelete andText:@"y"], nil];
   STAssertEqualObjects(diffs, [dmp diff_mainOfOldString:@"abcy" andNewString:@"xaxcxabc" checkLines:NO], @"diff_main: Overlap #2.");
 
-  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_DELETE andText:@"ABCD"], [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"a"], [DMPDiff diffWithOperation:DIFF_DELETE andText:@"="], [DMPDiff diffWithOperation:DIFF_INSERT andText:@"-"], [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"bcd"], [DMPDiff diffWithOperation:DIFF_DELETE andText:@"="], [DMPDiff diffWithOperation:DIFF_INSERT andText:@"-"], [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"efghijklmnopqrs"], [DMPDiff diffWithOperation:DIFF_DELETE andText:@"EFGHIJKLMNOefg"], nil];
+  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationDelete andText:@"ABCD"], [DMPDiff diffWithOperation:DMPOperationEqual andText:@"a"], [DMPDiff diffWithOperation:DMPOperationDelete andText:@"="], [DMPDiff diffWithOperation:DMPOperationInsert andText:@"-"], [DMPDiff diffWithOperation:DMPOperationEqual andText:@"bcd"], [DMPDiff diffWithOperation:DMPOperationDelete andText:@"="], [DMPDiff diffWithOperation:DMPOperationInsert andText:@"-"], [DMPDiff diffWithOperation:DMPOperationEqual andText:@"efghijklmnopqrs"], [DMPDiff diffWithOperation:DMPOperationDelete andText:@"EFGHIJKLMNOefg"], nil];
   STAssertEqualObjects(diffs, [dmp diff_mainOfOldString:@"ABCDa=bcd=efghijklmnopqrsEFGHIJKLMNOefg" andNewString:@"a-bcd-efghijklmnopqrs" checkLines:NO], @"diff_main: Overlap #3.");
 
-  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DIFF_INSERT andText:@" "], [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"a"], [DMPDiff diffWithOperation:DIFF_INSERT andText:@"nd"], [DMPDiff diffWithOperation:DIFF_EQUAL andText:@" [[Pennsylvania]]"], [DMPDiff diffWithOperation:DIFF_DELETE andText:@" and [[New"], nil];
+  diffs = [NSMutableArray arrayWithObjects:[DMPDiff diffWithOperation:DMPOperationInsert andText:@" "], [DMPDiff diffWithOperation:DMPOperationEqual andText:@"a"], [DMPDiff diffWithOperation:DMPOperationInsert andText:@"nd"], [DMPDiff diffWithOperation:DMPOperationEqual andText:@" [[Pennsylvania]]"], [DMPDiff diffWithOperation:DMPOperationDelete andText:@" and [[New"], nil];
   STAssertEqualObjects(diffs, [dmp diff_mainOfOldString:@"a [[Pennsylvania]] and [[New" andNewString:@" and [[Pennsylvania]]" checkLines:NO], @"diff_main: Large equality.");
 
   dmp.Diff_Timeout = 0.1f;  // 100ms
@@ -1011,13 +1011,13 @@
   p.length1 = 18;
   p.length2 = 17;
   p.diffs = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"jump"],
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"s"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"ed"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@" over "],
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"the"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"a"],
-      [DMPDiff diffWithOperation:DIFF_EQUAL andText:@"\nlaz"], nil];
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"jump"],
+                  [DMPDiff diffWithOperation:DMPOperationDelete andText:@"s"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"ed"],
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@" over "],
+                  [DMPDiff diffWithOperation:DMPOperationDelete andText:@"the"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"a"],
+          [DMPDiff diffWithOperation:DMPOperationEqual andText:@"\nlaz"], nil];
   NSString *strp = @"@@ -21,18 +22,17 @@\n jump\n-s\n+ed\n  over \n-the\n+a\n %0Alaz\n";
   STAssertEqualObjects(strp, [p description], @"Patch: description.");
 }
@@ -1121,8 +1121,8 @@
       @"patch_toText: Character encoding.");
 
   diffs = [NSMutableArray arrayWithObjects:
-      [DMPDiff diffWithOperation:DIFF_DELETE andText:@"`1234567890-=[]\\;',./"],
-      [DMPDiff diffWithOperation:DIFF_INSERT andText:@"~!@#$%^&*()_+{}|:\"<>?"], nil];
+          [DMPDiff diffWithOperation:DMPOperationDelete andText:@"`1234567890-=[]\\;',./"],
+                  [DMPDiff diffWithOperation:DMPOperationInsert andText:@"~!@#$%^&*()_+{}|:\"<>?"], nil];
   STAssertEqualObjects(diffs,
       ((Patch *)[[dmp patch_fromText:@"@@ -1,21 +1,21 @@\n-%601234567890-=%5B%5D%5C;',./\n+~!@#$%25%5E&*()_+%7B%7D%7C:%22%3C%3E?\n" error:NULL] objectAtIndex:0]).diffs,
       @"patch_fromText: Character decoding.");
@@ -1303,10 +1303,10 @@
 {
   NSArray *text = [NSMutableArray arrayWithObjects:[NSMutableString string], [NSMutableString string], nil];
   for (DMPDiff *myDiff in diffs) {
-    if (myDiff.operation != DIFF_INSERT) {
+    if (myDiff.operation != DMPOperationInsert) {
       [[text objectAtIndex:0] appendString:myDiff.text];
     }
-    if (myDiff.operation != DIFF_DELETE) {
+    if (myDiff.operation != DMPOperationDelete) {
       [[text objectAtIndex:1] appendString:myDiff.text];
     }
   }
